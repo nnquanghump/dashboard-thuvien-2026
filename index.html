@@ -101,6 +101,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
 #fi{display:none}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 16px;border-radius:var(--rl);font-size:12px;display:none;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.15)}
 .footer{text-align:center;padding:20px;font-size:10.5px;color:var(--text3);border-top:.5px solid var(--border);margin-top:16px}
+
+/* RAW DATA TABLE */
+#raw-table{font-family:var(--font)}
+#raw-table th,#raw-table td{padding:6px 10px;border-bottom:.5px solid var(--border);text-align:right;white-space:nowrap}
+#raw-table th{background:var(--bg3);color:var(--text2);font-weight:600;text-align:right;position:sticky;top:0}
+#raw-table td:first-child,#raw-table th:first-child{text-align:left;position:sticky;left:0;background:var(--bg2);min-width:260px;max-width:340px;white-space:normal;font-weight:500;color:var(--text)}
+#raw-table th:first-child{background:var(--bg3);z-index:2}
+#raw-table tr.group-row td{background:var(--gbg);color:var(--gdk);font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.04em;position:static}
+#raw-table tr:hover td{background:var(--bg3)}
+#raw-table tr.group-row:hover td{background:var(--gbg)}
 @media(max-width:900px){.sb{display:none}.g4,.g5{grid-template-columns:repeat(2,1fr)}.cg2,.cg3{grid-template-columns:1fr}}
 @media(max-width:580px){.g2,.g3{grid-template-columns:1fr 1fr}.g4,.g5{grid-template-columns:1fr 1fr}}
 </style>
@@ -123,6 +133,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
   <div class="si" onclick="switchTab('hethong',this)"><i class="ti ti-device-desktop"></i>6. Hệ thống QT thư viện</div>
   <div class="si" onclick="switchTab('csvc',this)"><i class="ti ti-building"></i>7. Cơ sở vật chất</div>
   <div class="sb-sec">Cài đặt</div>
+  <div class="si" onclick="switchTab('rawdata',this)"><i class="ti ti-table"></i>Dữ liệu thô</div>
   <div class="si" onclick="switchTab('settings',this)"><i class="ti ti-upload"></i>Nhập dữ liệu</div>
 </nav>
 
@@ -141,17 +152,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
   <!-- ===== OVERVIEW ===== -->
   <div id="sec-overview" class="section on">
     <div class="g4">
-      <div class="mc hi"><div class="mc-lbl">Tổng lượt bạn đọc (3 tầng)</div><div class="mc-val" id="ov-bd">—</div></div>
-      <div class="mc hi"><div class="mc-lbl">Mượn sách về nhà</div><div class="mc-val" id="ov-muon">—</div></div>
-      <div class="mc hi"><div class="mc-lbl">Lượt sử dụng Uptodate</div><div class="mc-val" id="ov-ut">—</div></div>
-      <div class="mc hi"><div class="mc-lbl">Tài liệu biên mục mới</div><div class="mc-val" id="ov-bm">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Tổng lượt bạn đọc (3 tầng)</div><div class="mc-val" id="ov-bd">—</div><div class="mc-chg" id="ov-bd-chg"></div></div>
+      <div class="mc hi"><div class="mc-lbl">Mượn sách về nhà</div><div class="mc-val" id="ov-muon">—</div><div class="mc-chg" id="ov-muon-chg"></div></div>
+      <div class="mc hi"><div class="mc-lbl">Lượt sử dụng Uptodate</div><div class="mc-val" id="ov-ut">—</div><div class="mc-chg" id="ov-ut-chg"></div></div>
+      <div class="mc hi"><div class="mc-lbl">Tài liệu biên mục mới</div><div class="mc-val" id="ov-bm">—</div><div class="mc-chg" id="ov-bm-chg"></div></div>
     </div>
     <div class="g4">
-      <div class="mc"><div class="mc-lbl">Tỷ lệ dùng OPAC</div><div class="mc-val" id="ov-opac">—</div></div>
-      <div class="mc"><div class="mc-lbl">Lượt truy cập Fanpage</div><div class="mc-val" id="ov-fp">—</div></div>
-      <div class="mc warn"><div class="mc-lbl">Thẻ trả trễ hạn</div><div class="mc-val" id="ov-tre">—</div></div>
-      <div class="mc"><div class="mc-lbl">Sự cố CSVC</div><div class="mc-val" id="ov-suco">—</div></div>
+      <div class="mc"><div class="mc-lbl">Tỷ lệ dùng OPAC</div><div class="mc-val" id="ov-opac">—</div><div class="mc-chg" id="ov-opac-chg"></div></div>
+      <div class="mc"><div class="mc-lbl">Lượt truy cập Fanpage</div><div class="mc-val" id="ov-fp">—</div><div class="mc-chg" id="ov-fp-chg"></div></div>
+      <div class="mc warn"><div class="mc-lbl">Thẻ trả trễ hạn</div><div class="mc-val" id="ov-tre">—</div><div class="mc-chg" id="ov-tre-chg"></div></div>
+      <div class="mc"><div class="mc-lbl">Sự cố CSVC</div><div class="mc-val" id="ov-suco">—</div><div class="mc-chg" id="ov-suco-chg"></div></div>
     </div>
+    <div class="info-box" id="ov-period-note" style="margin-bottom:14px"></div>
     <div class="cg2">
       <div class="cc">
         <div class="cc-t">Lượt bạn đọc vào thư viện theo tháng</div>
@@ -536,6 +548,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex
     </div>
   </div>
 
+  <!-- ===== DỮ LIỆU THÔ ===== -->
+  <div id="sec-rawdata" class="section">
+    <div class="sec-lbl"><i class="ti ti-table"></i>BẢNG DỮ LIỆU THÔ — TOÀN BỘ CHỈ SỐ</div>
+    <div class="info-box">Bảng này hiển thị nguyên trạng số liệu đã nhập trong file Excel theo từng tháng, dùng để đối chiếu nhanh không qua biểu đồ.</div>
+    <div class="tc" style="overflow-x:auto;padding:0">
+      <table id="raw-table" style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr id="raw-thead"></tr></thead>
+        <tbody id="raw-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- ===== SETTINGS ===== -->
   <div id="sec-settings" class="section">
     <div class="sec-lbl"><i class="ti ti-upload"></i>NHẬP DỮ LIỆU — CẬP NHẬT HÀNG THÁNG</div>
@@ -726,6 +750,27 @@ function buildCharts(){
 function renderCards(){
   const totalBD = last(D.t1_luot)+last(D.t2_luot)+last(D.t3_luot);
   const totalBM = last(D.bm_total);
+  // Tổng tháng trước (nếu có ít nhất 2 tháng)
+  const prevIdx = L.length-2;
+  const has2 = prevIdx>=0;
+  const prevBD = has2 ? (D.t1_luot[prevIdx]+D.t2_luot[prevIdx]+D.t3_luot[prevIdx]) : null;
+  const prevBM = has2 ? D.bm_total[prevIdx] : null;
+
+  // Hàm tính & hiển thị % thay đổi so tháng trước. higherIsBad: true nếu tăng là xấu (vd: sự cố, trễ hạn)
+  function showChg(elId, curVal, arr, higherIsBad){
+    const el = $(elId);
+    if(!el) return;
+    if(!has2 || !arr || arr.length<2){ el.textContent=''; el.className='mc-chg'; return; }
+    const prevVal = arr[prevIdx];
+    if(prevVal===0 && curVal===0){ el.textContent='Không đổi'; el.className='mc-chg eq'; return; }
+    if(prevVal===0){ el.textContent='Mới phát sinh'; el.className='mc-chg '+(higherIsBad?'dn':'up'); return; }
+    const pct = ((curVal-prevVal)/Math.abs(prevVal))*100;
+    const dir = pct>=0?'up':'down';
+    const isGood = higherIsBad ? (pct<0) : (pct>=0);
+    const arrow = pct>=0?'↑':'↓';
+    el.textContent = arrow+' '+Math.abs(pct).toFixed(1)+'% so '+L[prevIdx];
+    el.className = 'mc-chg '+(Math.abs(pct)<0.05?'eq':(isGood?'up':'dn'));
+  }
 
   set('ov-bd',fmtInt(totalBD));
   set('ov-muon',fmtInt(last(D.dv_muon)));
@@ -735,6 +780,22 @@ function renderCards(){
   set('ov-fp',fmtInt(last(D.ht_fp)));
   set('ov-tre',fmtInt(last(D.the_tre)));
   set('ov-suco',fmtInt(last(D.cv_tong)));
+
+  showChg('ov-bd-chg', totalBD, has2?[prevBD,totalBD]:null, false);
+  showChg('ov-muon-chg', last(D.dv_muon), D.dv_muon, false);
+  showChg('ov-ut-chg', last(D.ut_use), D.ut_use, false);
+  showChg('ov-bm-chg', totalBM, has2?[prevBM,totalBM]:null, false);
+  showChg('ov-opac-chg', last(D.opac_rate), D.opac_rate, false);
+  showChg('ov-fp-chg', last(D.ht_fp), D.ht_fp, false);
+  showChg('ov-tre-chg', last(D.the_tre), D.the_tre, true);
+  showChg('ov-suco-chg', last(D.cv_tong), D.cv_tong, true);
+
+  const periodEl = $('ov-period-note');
+  if(periodEl){
+    periodEl.innerHTML = has2
+      ? '<strong>So sánh:</strong> Tháng '+L[L.length-1]+' so với tháng '+L[prevIdx]+' liền trước.'
+      : '<strong>Lưu ý:</strong> Hiện chỉ có dữ liệu 1 tháng ('+L[L.length-1]+'), chưa đủ để so sánh tháng trước.';
+  }
 
   // 1. Người dùng
   set('nd-the',fmtInt(last(D.the_hoatdong)));
@@ -814,6 +875,87 @@ function switchTab(name,el){
   document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
   $('sec-'+name).classList.add('on');
   if(el) el.classList.add('on');
+}
+
+// ============ BẢNG DỮ LIỆU THÔ ============
+const RAW_FIELDS = [
+  {group:'1. Quản lý người dùng', items:[
+    ['the_hoatdong','Tổng số thẻ thư viện đang hoạt động'],
+    ['the_new','Số bạn đọc đăng ký thẻ thư viện mới'],
+    ['the_tra','Số thẻ thư viện trả cho bạn đọc'],
+    ['the_gh','Số bạn đọc gia hạn thẻ thư viện'],
+    ['the_tre','Số thẻ trả trễ hạn'],
+    ['opac_tk_active','Tổng số TK OPAC đang hoạt động'],
+    ['opac_luot','Tổng lượt bạn đọc truy cập OPAC'],
+    ['opac_tk_truycap','Tổng số TK truy cập OPAC'],
+    ['opac_rate','Tỷ lệ bạn đọc sử dụng OPAC (%)'],
+    ['opac_digital','Tỷ lệ khai thác tài nguyên số (%)'],
+  ]},
+  {group:'2. Phục vụ tại chỗ', items:[
+    ['cho_ngoi','Tổng chỗ ngồi phục vụ'],
+    ['t1_luot','Lượt bạn đọc Tầng 1'],['t1_ssi','SSI Tầng 1 (%)'],['t1_sur','SUR Tầng 1 (%)'],['t1_may','Máy tính kín chỗ T1 (ngày)'],
+    ['t2_luot','Lượt bạn đọc Tầng 2'],['t2_ssi','SSI Tầng 2 (%)'],['t2_sur','SUR Tầng 2 (%)'],['t2_may','Máy tính kín chỗ T2 (ngày)'],
+    ['t3_luot','Lượt bạn đọc Tầng 3'],['t3_ssi','SSI Tầng 3 (%)'],['t3_sur','SUR Tầng 3 (%)'],['t3_may','Máy tính kín chỗ T3 (ngày)'],
+  ]},
+  {group:'3. Quản trị tài nguyên TT', items:[
+    ['tn_nd_tv','Nhan đề sách Tiếng Việt'],['kho_sachTV','Bản in sách Tiếng Việt'],
+    ['tn_nd_nv','Nhan đề sách ngoại văn'],['kho_nv','Bản in sách ngoại văn'],
+    ['tn_tc_loai','Loại tạp chí'],['tn_tc_ban','Bản in tạp chí'],
+    ['kho_lv','Luận văn/luận án nội sinh'],['kho_dt','TL điện tử/tài nguyên mở'],
+    ['bm_sachTN','Sách in tiếp nhận mới'],['tn_tang','Sách tặng tiếp nhận'],['bm_sachBM','Sách đã biên mục'],
+    ['bm_dtTN','TL điện tử tiếp nhận mới'],['bm_dtBM','TL điện tử đã biên mục'],
+    ['bm_tcTN','Tạp chí tiếp nhận mới'],['bm_tcBM','Tạp chí đã biên mục'],
+    ['bm_lvTN','Luận văn tiếp nhận'],['bm_lvBM','Luận văn đã biên mục'],
+    ['bm_tondong','TL tồn đọng từ tháng trước'],['bm_hoanthanh','Tỷ lệ hoàn thành biên mục (%)'],['bm_tonrate','Tỷ lệ tồn đọng (%)'],
+    ['bm_bgTV','Bàn giao Kho sách TV'],['bm_bgTA','Bàn giao Kho sách Anh'],['bm_bgTC','Bàn giao Kho tạp chí'],['bm_bgLV','Bàn giao Kho luận văn'],
+    ['bm_total','Tổng TL biên mục mới'],['bm_chuanhoa','Biểu ghi chỉnh sửa/chuẩn hóa'],
+    ['phuchoi_t2','Sách T2 phục hồi thành công'],['phuchoi_t3','Sách T3 phục hồi thành công'],
+  ]},
+  {group:'4. Dịch vụ thông tin', items:[
+    ['dv_muon','Mượn sách TV về nhà'],['dv_tv','Vòng quay kho sách TV'],['dv_aur','Tỷ lệ bạn đọc tích cực (%)'],
+    ['dv_gh','TL gia hạn'],['dv_tra','TL trả'],['dv_qh','TL quá hạn'],
+    ['dv_xm','YC xác minh không nợ'],['dv_noisinh','TL nội sinh yêu cầu tại chỗ'],['dv_tuxa','TL yêu cầu từ xa'],
+    ['dv_photoYC','TL yêu cầu photo+in'],['photo_yc','YC photo hoàn thành'],['photo_trang','Trang giấy photo phục vụ'],
+    ['photo_baotri','Lần thay mực/bảo trì máy'],
+  ]},
+  {group:'5. Cơ sở dữ liệu', items:[
+    ['csdl_springer','Tạp chí qua SpringerLink'],['csdl_khcn','Tạp chí CSDL KH&CN'],
+    ['ut_tot','Tổng TK Uptodate đăng ký'],['ut_new','TK đăng ký mới'],['ut_rn','TK gia hạn'],
+    ['ut_act','TK Active'],['ut_use','Tổng lượt sử dụng'],['ut_srch','Tổng số tìm kiếm'],
+  ]},
+  {group:'6. Hệ thống quản trị', items:[
+    ['ht_up','Uptime hệ thống (%)'],['ht_bk','Sao lưu thành công (%)'],['ht_sc','Số lần sự cố hệ thống'],
+    ['ht_loh','Lỗ hổng bảo mật phát hiện'],['ht_yc','YC hỗ trợ IT'],['ht_fp','Lượt truy cập Fanpage'],
+  ]},
+  {group:'7. Cơ sở vật chất', items:[
+    ['cv_t1','Sự cố Tầng 1'],['cv_t2','Sự cố Tầng 2'],['cv_t3','Sự cố Tầng 3'],
+    ['cv_tong','Tổng sự cố CSVC'],['cv_kp','Đã khắc phục'],
+    ['cv_yc','YC gửi KHTC&CSVC'],['cv_gq','YC giải quyết hoàn tất'],['cv_td','YC tồn đọng'],
+  ]},
+];
+
+function buildRawTable(){
+  const thead = $('raw-thead');
+  const tbody = $('raw-tbody');
+  if(!thead || !tbody) return;
+
+  thead.innerHTML = '<th>Chỉ số</th>' + L.map(m=>`<th>${m}</th>`).join('');
+
+  let rowsHtml = '';
+  RAW_FIELDS.forEach(g=>{
+    rowsHtml += `<tr class="group-row"><td colspan="${L.length+1}">${g.group}</td></tr>`;
+    g.items.forEach(([key,label])=>{
+      const arr = D[key];
+      if(!arr) return;
+      const cells = L.map((_,i)=>{
+        const v = arr[i];
+        const display = typeof v==='number' ? (Number.isInteger(v)?v.toLocaleString('vi-VN'):v.toFixed(2)) : (v||'—');
+        return `<td>${display}</td>`;
+      }).join('');
+      rowsHtml += `<tr><td>${label}</td>${cells}</tr>`;
+    });
+  });
+  tbody.innerHTML = rowsHtml;
 }
 
 // ============ PARSE EXCEL THEO CẤU TRÚC MỚI ============
@@ -950,6 +1092,7 @@ function parseWorkbook(wb, fname){
   $('sub-date').textContent='Dữ liệu: '+L.join(' · ')+' · Nguồn: '+fname;
   renderCards();
   buildCharts();
+  buildRawTable();
   showToast('✓ Đã tải '+L.length+' tháng dữ liệu từ '+fname);
 }
 
@@ -1091,6 +1234,7 @@ D = D_EMBED;
 $('sub-date').textContent='Dữ liệu: '+L.join(' · ')+' · Nguồn: file_mau_chay_gith.xlsx (nhúng sẵn)';
 renderCards();
 buildCharts();
+buildRawTable();
 </script>
 </body>
 </html>
