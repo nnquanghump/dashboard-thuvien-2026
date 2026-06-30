@@ -2,405 +2,1095 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Thư viện — Trung tâm học liệu</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Nội bộ Thư viện</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f5f5f3; --bg2: #ffffff; --bg3: #f0efeb;
-    --text: #1a1a18; --text2: #5a5a56; --text3: #9a9a94;
-    --border: rgba(0,0,0,0.10); --border2: rgba(0,0,0,0.18);
-    --green: #1d9e75; --green-bg: #e1f5ee; --green-dark: #0f6e56;
-    --blue: #378add; --blue-bg: #e6f1fb; --blue-dark: #185fa5;
-    --amber: #ef9f27; --amber-bg: #faeeda; --amber-dark: #854f0b;
-    --pink: #d4537e;
-    --radius: 8px; --radius-lg: 12px;
-    --font: -apple-system, 'Segoe UI', sans-serif;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a; --bg2: #252523; --bg3: #1a1a18;
-      --text: #e8e6de; --text2: #9a9a92; --text3: #6a6a64;
-      --border: rgba(255,255,255,0.10); --border2: rgba(255,255,255,0.18);
-      --green-bg: #0a2e22; --blue-bg: #0a1e36; --amber-bg: #2e1e06;
-    }
-  }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
-
-  /* SIDEBAR */
-  .sb { width: 200px; min-width: 200px; background: var(--bg2); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-  .sb-logo { padding: 14px 12px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 9px; }
-  .sb-icon { width: 28px; height: 28px; background: var(--green); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .sb-icon i { color: #fff; font-size: 15px; }
-  .sb-name { font-size: 12px; font-weight: 600; color: var(--text); }
-  .sb-sub-name { font-size: 10px; color: var(--text2); }
-  .sb-sec { padding: 10px 10px 3px; font-size: 9.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; }
-  .si { display: flex; align-items: center; gap: 7px; padding: 7px 10px; font-size: 11.5px; color: var(--text2); border-radius: var(--radius); margin: 1px 5px; cursor: pointer; transition: background .12s; }
-  .si:hover { background: var(--bg3); }
-  .si.on { background: var(--green-bg); color: var(--green-dark); font-weight: 600; }
-  .si i { font-size: 15px; flex-shrink: 0; }
-
-  /* MAIN */
-  .main { flex: 1; padding: 16px; overflow: auto; }
-  .topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-  .pg-title { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .pg-sub { font-size: 10.5px; color: var(--text2); margin-top: 3px; }
-  .live { background: var(--green-bg); color: var(--green-dark); font-size: 9.5px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-  .tbr { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .up-btn { display: flex; align-items: center; gap: 5px; background: var(--bg2); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 7px 11px; font-size: 11.5px; color: var(--text); cursor: pointer; transition: background .12s; }
-  .up-btn:hover { background: var(--bg3); }
-  .up-btn i { font-size: 14px; }
-
-  /* SECTIONS */
-  .sec-lbl { font-size: 10.5px; font-weight: 600; color: var(--text2); margin: 14px 0 8px; display: flex; align-items: center; gap: 5px; }
-  .sec-lbl i { font-size: 13px; }
-
-  /* METRIC CARDS */
-  .met4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
-  .met3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-  .mc { background: var(--bg3); border-radius: var(--radius); padding: 12px; }
-  .mc-lbl { font-size: 10px; color: var(--text2); margin-bottom: 5px; line-height: 1.4; }
-  .mc-val { font-size: 21px; font-weight: 700; color: var(--text); }
-  .mc-chg { font-size: 10px; margin-top: 3px; }
-  .up { color: var(--green-dark); } .dn { color: #993c1d; } .eq { color: var(--text3); }
-
-  /* CHART CARDS */
-  .cg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .cg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .cc { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px; }
-  .cc-t { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-  .cc-s { font-size: 9.5px; color: var(--text2); margin-bottom: 9px; }
-  .leg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-  .li { display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: var(--text2); }
-  .ld { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-
-  /* BOTTOM */
-  .bdr { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .dbl { list-style: none; }
-  .dbl li { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 11.5px; }
-  .dbl li:last-child { border-bottom: none; }
-  .tag { font-size: 9.5px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-  .tg { background: var(--green-bg); color: var(--green-dark); }
-  .tb { background: var(--blue-bg); color: var(--blue-dark); }
-  .ty { background: var(--amber-bg); color: var(--amber-dark); }
-
-  /* UPLOAD AREA */
-  .ua { border: 1.5px dashed var(--border2); border-radius: var(--radius-lg); padding: 18px; text-align: center; margin-top: 12px; cursor: pointer; transition: background .12s; }
-  .ua:hover { background: var(--bg3); }
-  .ua i { font-size: 26px; color: var(--text3); display: block; margin-bottom: 5px; }
-  .ua p { font-size: 11.5px; color: var(--text2); }
-  .ua small { font-size: 10px; color: var(--text3); }
-  #fi { display: none; }
-
-  /* TOAST */
-  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--green); color: #fff; padding: 10px 16px; border-radius: var(--radius-lg); font-size: 12px; display: none; z-index: 999; box-shadow: 0 4px 16px rgba(0,0,0,.15); }
-
-  /* FOOTER */
-  .footer { text-align: center; padding: 20px; font-size: 10.5px; color: var(--text3); border-top: 0.5px solid var(--border); margin-top: 8px; }
-
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    .sb { display: none; }
-    .met4 { grid-template-columns: repeat(2, 1fr); }
-    .cg2 { grid-template-columns: 1fr; }
-    .bdr { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 600px) {
-    .met3, .met4 { grid-template-columns: 1fr 1fr; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f3;--bg2:#fff;--bg3:#f0efeb;--bg4:#e8e7e2;
+  --text:#1a1a18;--text2:#5a5a56;--text3:#9a9a94;
+  --border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.16);
+  --green:#1d9e75;--gbg:#e1f5ee;--gdk:#0f6e56;--gdkk:#085041;
+  --blue:#378add;--bbg:#e6f1fb;--bdk:#185fa5;
+  --amber:#ef9f27;--abg:#faeeda;--adk:#854f0b;
+  --red:#e24b4a;--rbg:#fcebeb;--rdk:#a32d2d;
+  --pink:#d4537e;
+  --r:8px;--rl:12px;
+  --font:-apple-system,'Segoe UI',sans-serif
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252523;--bg3:#1e1e1c;--bg4:#2a2a28;
+  --text:#e8e6de;--text2:#9a9a92;--text3:#6a6a64;
+  --border:rgba(255,255,255,.09);--border2:rgba(255,255,255,.16);
+  --gbg:#0a2e22;--bbg:#0a1e36;--abg:#2e1e06;--rbg:#2e0a0a
+}}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:13px}
+.sb{width:210px;min-width:210px;background:var(--bg2);border-right:.5px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo{padding:14px 12px;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:9px}
+.sb-icon{width:30px;height:30px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon i{color:#fff;font-size:16px}
+.sb-name{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
+.sb-sub{font-size:10px;color:var(--text2)}
+.sb-sec{padding:10px 10px 3px;font-size:9.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.si{display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:12px;color:var(--text2);border-radius:var(--r);margin:1px 5px;cursor:pointer;transition:background .12s}
+.si:hover{background:var(--bg3)}
+.si.on{background:var(--gbg);color:var(--gdk);font-weight:600}
+.si i{font-size:15px;flex-shrink:0}
+.main{flex:1;padding:16px;overflow:auto;min-width:0}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.pg-title{font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px}
+.pg-sub{font-size:10.5px;color:var(--text2);margin-top:3px}
+.live{background:var(--gbg);color:var(--gdk);font-size:9.5px;padding:2px 8px;border-radius:20px;font-weight:600}
+.tbr{display:flex;align-items:center;gap:8px}
+.btn{display:flex;align-items:center;gap:5px;background:var(--bg2);border:.5px solid var(--border2);border-radius:var(--r);padding:7px 11px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font);transition:background .12s}
+.btn:hover{background:var(--bg3)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:var(--gdk)}
+.section{display:none}.section.on{display:block}
+.sec-lbl{font-size:10.5px;font-weight:600;color:var(--text2);margin:14px 0 8px;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.04em}
+.sec-lbl i{font-size:13px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+.mc{background:var(--bg3);border-radius:var(--r);padding:12px 13px}
+.mc.hi{background:var(--gbg)}.mc.warn{background:var(--abg)}.mc.danger{background:var(--rbg)}
+.mc-lbl{font-size:10px;color:var(--text2);margin-bottom:5px;line-height:1.4}
+.mc.hi .mc-lbl{color:var(--gdkk)}.mc.warn .mc-lbl{color:var(--adk)}.mc.danger .mc-lbl{color:var(--rdk)}
+.mc-val{font-size:21px;font-weight:700;color:var(--text)}
+.mc.hi .mc-val{color:var(--gdk)}.mc.warn .mc-val{color:var(--adk)}.mc.danger .mc-val{color:var(--rdk)}
+.mc-chg{font-size:10px;margin-top:3px;color:var(--text3)}
+.up{color:var(--gdk)!important}.dn{color:var(--rdk)!important}.eq{color:var(--text3)!important}
+.mc-unit{font-size:13px;font-weight:400;color:var(--text2);margin-left:1px}
+.cg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.cg3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.cc{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--rl);padding:14px}
+.cc-t{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.cc-s{font-size:9.5px;color:var(--text2);margin-bottom:9px}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.li{display:flex;align-items:center;gap:4px;font-size:9.5px;color:var(--text2)}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.tc{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.tc-t{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
+.kv{list-style:none}
+.kv li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px solid var(--border);font-size:11.5px;gap:8px}
+.kv li:last-child{border-bottom:none}
+.kv-k{color:var(--text2);flex:1;line-height:1.4}
+.kv-v{font-weight:600;color:var(--text);text-align:right;flex-shrink:0}
+.tag{font-size:9.5px;padding:2px 8px;border-radius:20px;font-weight:600}
+.tg{background:var(--gbg);color:var(--gdk)}.tb{background:var(--bbg);color:var(--bdk)}
+.ty{background:var(--abg);color:var(--adk)}.tr{background:var(--rbg);color:var(--rdk)}
+.pbar-wrap{margin-bottom:7px}
+.pbar-top{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text2);margin-bottom:4px}
+.pbar{height:7px;background:var(--bg4);border-radius:20px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:20px;transition:width .5s}
+.info-box{background:var(--bg3);border-left:3px solid var(--green);border-radius:0 var(--r) var(--r) 0;padding:10px 12px;font-size:11.5px;color:var(--text2);line-height:1.6;margin-bottom:10px}
+.info-box strong{color:var(--text);font-weight:600}
+.sheets-form{background:var(--bbg);border:.5px solid rgba(55,138,221,.3);border-radius:var(--rl);padding:14px;margin-bottom:14px}
+.sheets-title{font-size:12px;font-weight:600;color:var(--bdk);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sheets-row{display:flex;gap:8px;align-items:center}
+.sheets-input{flex:1;padding:7px 10px;border:.5px solid var(--border2);border-radius:var(--r);font-size:11.5px;background:var(--bg2);color:var(--text);font-family:var(--font)}
+.ua{border:1.5px dashed var(--border2);border-radius:var(--rl);padding:18px;text-align:center;cursor:pointer;transition:background .12s;margin-top:10px}
+.ua:hover{background:var(--bg3)}
+.ua i{font-size:28px;color:var(--text3);display:block;margin-bottom:6px}
+.ua p{font-size:12px;color:var(--text2)}
+.ua small{font-size:10px;color:var(--text3)}
+#fi{display:none}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 16px;border-radius:var(--rl);font-size:12px;display:none;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.footer{text-align:center;padding:20px;font-size:10.5px;color:var(--text3);border-top:.5px solid var(--border);margin-top:16px}
+@media(max-width:900px){.sb{display:none}.g4,.g5{grid-template-columns:repeat(2,1fr)}.cg2,.cg3{grid-template-columns:1fr}}
+@media(max-width:580px){.g2,.g3{grid-template-columns:1fr 1fr}.g4,.g5{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <nav class="sb">
   <div class="sb-logo">
     <div class="sb-icon"><i class="ti ti-books"></i></div>
-    <div>
-      <div class="sb-name">Thư viện số</div>
-      <div class="sb-sub-name">Trung tâm học liệu</div>
-    </div>
+    <div><div class="sb-name">Dashboard Nội bộ</div><div class="sb-sub">Thư viện — Trung tâm học liệu</div></div>
   </div>
   <div class="sb-sec">Tổng quan</div>
-  <div class="si on"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
-  <div class="sb-sec">Bạn đọc & Không gian</div>
-  <div class="si"><i class="ti ti-users"></i>Lượt vào thư viện</div>
-  <div class="si"><i class="ti ti-building"></i>Phòng đọc & SSI</div>
-  <div class="sb-sec">Tài nguyên</div>
-  <div class="si"><i class="ti ti-book"></i>Kho sách Tiếng Việt</div>
-  <div class="si"><i class="ti ti-world"></i>Sách ngoại văn</div>
-  <div class="si"><i class="ti ti-file-text"></i>Luận văn / NCKH</div>
-  <div class="si"><i class="ti ti-device-desktop"></i>Tài liệu điện tử</div>
-  <div class="sb-sec">Hoạt động</div>
-  <div class="si"><i class="ti ti-repeat"></i>Mượn - Trả</div>
-  <div class="si"><i class="ti ti-edit"></i>Biên mục & Chuẩn hóa</div>
-  <div class="sb-sec">Hệ thống</div>
-  <div class="si"><i class="ti ti-database"></i>OPAC & Uptodate</div>
-  <div class="si"><i class="ti ti-brand-facebook"></i>Fanpage</div>
-  <div class="si"><i class="ti ti-upload"></i>Nhập dữ liệu</div>
+  <div class="si on" onclick="switchTab('overview',this)"><i class="ti ti-layout-dashboard"></i>Tổng quan</div>
+  <div class="sb-sec">Phân hệ (theo file mẫu)</div>
+  <div class="si" onclick="switchTab('nguoidung',this)"><i class="ti ti-id"></i>1. Quản lý người dùng</div>
+  <div class="si" onclick="switchTab('phucvu',this)"><i class="ti ti-armchair"></i>2. Phục vụ tại chỗ</div>
+  <div class="si" onclick="switchTab('tainguyen',this)"><i class="ti ti-books"></i>3. Quản trị tài nguyên TT</div>
+  <div class="si" onclick="switchTab('dichvu',this)"><i class="ti ti-repeat"></i>4. Dịch vụ thông tin</div>
+  <div class="si" onclick="switchTab('csdl',this)"><i class="ti ti-database"></i>5. Cơ sở dữ liệu</div>
+  <div class="si" onclick="switchTab('hethong',this)"><i class="ti ti-device-desktop"></i>6. Hệ thống QT thư viện</div>
+  <div class="si" onclick="switchTab('csvc',this)"><i class="ti ti-building"></i>7. Cơ sở vật chất</div>
+  <div class="sb-sec">Cài đặt</div>
+  <div class="si" onclick="switchTab('settings',this)"><i class="ti ti-upload"></i>Nhập dữ liệu</div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
   <div class="topbar">
     <div>
-      <div class="pg-title"><i class="ti ti-chart-dots" style="font-size:18px"></i>Thống kê Thư viện <span class="live">LIVE</span></div>
-      <div class="pg-sub" id="sub-date">Dữ liệu: T3–T5/2026 · Nguồn: Dashboard_TV_Thang_5.xlsx</div>
+      <div class="pg-title"><i class="ti ti-chart-dots" style="font-size:19px"></i>Dashboard Nội bộ Thư viện <span class="live">LIVE</span></div>
+      <div class="pg-sub" id="sub-date">Đang tải dữ liệu...</div>
     </div>
     <div class="tbr">
-      <label class="up-btn" for="fi"><i class="ti ti-upload"></i>Cập nhật Excel / CSV</label>
+      <label class="btn" for="fi"><i class="ti ti-upload"></i>Cập nhật Excel</label>
       <input type="file" id="fi" accept=".xlsx,.xls,.csv">
     </div>
   </div>
 
-  <!-- KHÔNG GIAN -->
-  <div class="sec-lbl"><i class="ti ti-building"></i>KHÔNG GIAN PHỤC VỤ BẠN ĐỌC</div>
-  <div class="met4">
-    <div class="mc"><div class="mc-lbl">Tổng lượt vào Tầng 1 (tháng mới nhất)</div><div class="mc-val" id="m-t1">10.250</div><div class="mc-chg up" id="m-t1c">↑ 11,0% so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">SSI Tầng 1 (%)</div><div class="mc-val" id="m-ssi1">60%</div><div class="mc-chg up">↑ 10 điểm so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">Tổng lượt vào Tầng 2 (tháng mới nhất)</div><div class="mc-val" id="m-t2">2.439</div><div class="mc-chg up">↑ 27,5% so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">SSI Tầng 2 (%)</div><div class="mc-val" id="m-ssi2">36%</div><div class="mc-chg up">↑ 26,4 điểm so tháng trước</div></div>
-  </div>
-  <div class="cg2">
-    <div class="cc">
-      <div class="cc-t">Lượt bạn đọc vào thư viện theo tháng</div>
-      <div class="cc-s">Tầng 1 (Tự học) · Tầng 2 (Phòng đọc) · Tầng 3 (Phòng đọc)</div>
-      <div class="leg">
-        <span class="li"><span class="ld" style="background:#1d9e75"></span>Tầng 1 - Tự học</span>
-        <span class="li"><span class="ld" style="background:#378add"></span>Tầng 2 - Phòng đọc</span>
-        <span class="li"><span class="ld" style="background:#ef9f27"></span>Tầng 3 - Phòng đọc</span>
-      </div>
-      <div style="position:relative;height:180px"><canvas id="c1"></canvas></div>
+  <!-- ===== OVERVIEW ===== -->
+  <div id="sec-overview" class="section on">
+    <div class="g4">
+      <div class="mc hi"><div class="mc-lbl">Tổng lượt bạn đọc (3 tầng)</div><div class="mc-val" id="ov-bd">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Mượn sách về nhà</div><div class="mc-val" id="ov-muon">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Lượt sử dụng Uptodate</div><div class="mc-val" id="ov-ut">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Tài liệu biên mục mới</div><div class="mc-val" id="ov-bm">—</div></div>
     </div>
-    <div class="cc">
-      <div class="cc-t">Tỷ lệ căng thẳng không gian (SSI %)</div>
-      <div class="cc-s">Space Stress Index — % công suất sử dụng theo tháng</div>
-      <div class="leg">
-        <span class="li"><span class="ld" style="background:#1d9e75"></span>SSI Tầng 1</span>
-        <span class="li"><span class="ld" style="background:#378add"></span>SSI Tầng 2</span>
-        <span class="li"><span class="ld" style="background:#ef9f27"></span>SSI Tầng 3</span>
-      </div>
-      <div style="position:relative;height:180px"><canvas id="c2"></canvas></div>
+    <div class="g4">
+      <div class="mc"><div class="mc-lbl">Tỷ lệ dùng OPAC</div><div class="mc-val" id="ov-opac">—</div></div>
+      <div class="mc"><div class="mc-lbl">Lượt truy cập Fanpage</div><div class="mc-val" id="ov-fp">—</div></div>
+      <div class="mc warn"><div class="mc-lbl">Thẻ trả trễ hạn</div><div class="mc-val" id="ov-tre">—</div></div>
+      <div class="mc"><div class="mc-lbl">Sự cố CSVC</div><div class="mc-val" id="ov-suco">—</div></div>
     </div>
-  </div>
-
-  <!-- KHO TÀI NGUYÊN -->
-  <div class="sec-lbl"><i class="ti ti-books"></i>KHO TÀI NGUYÊN</div>
-  <div class="met4">
-    <div class="mc"><div class="mc-lbl">Sách Tiếng Việt (bản in)</div><div class="mc-val">23.232</div><div class="mc-chg up">↑ 79 bản so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">Sách ngoại văn (bản in)</div><div class="mc-val">3.182</div><div class="mc-chg eq">— Không đổi</div></div>
-    <div class="mc"><div class="mc-lbl">Luận văn / luận án nội sinh</div><div class="mc-val">10.993</div><div class="mc-chg up">↑ 8 bản so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">Tài liệu điện tử / mở</div><div class="mc-val">3.189</div><div class="mc-chg up">↑ 16 TL so tháng trước</div></div>
-  </div>
-  <div class="cg2">
-    <div class="cc">
-      <div class="cc-t">Tăng trưởng kho tài nguyên</div>
-      <div class="cc-s">Tổng số bản / tài liệu tích lũy theo tháng</div>
-      <div class="leg">
-        <span class="li"><span class="ld" style="background:#185fa5"></span>Sách TV</span>
-        <span class="li"><span class="ld" style="background:#ef9f27"></span>Luận văn</span>
-        <span class="li"><span class="ld" style="background:#d4537e"></span>TL điện tử</span>
-        <span class="li"><span class="ld" style="background:#1d9e75"></span>Ngoại văn</span>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Lượt bạn đọc vào thư viện theo tháng</div>
+        <div class="cc-s">Tầng 1 (Tự học) · Tầng 2 (Sách TV) · Tầng 3 (Ngoại văn)</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Tầng 1</span>
+          <span class="li"><span class="ld" style="background:#378add"></span>Tầng 2</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tầng 3</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-luot"></canvas></div>
       </div>
-      <div style="position:relative;height:180px"><canvas id="c3"></canvas></div>
-    </div>
-    <div class="cc">
-      <div class="cc-t">Hoạt động mượn & biên mục</div>
-      <div class="cc-s">Lượt mượn về nhà · Biên mục mới · Chuẩn hóa biểu ghi</div>
-      <div class="leg">
-        <span class="li"><span class="ld" style="background:#185fa5"></span>Mượn về nhà</span>
-        <span class="li"><span class="ld" style="background:#1d9e75"></span>Biên mục mới</span>
-        <span class="li"><span class="ld" style="background:#ef9f27"></span>Chuẩn hóa</span>
+      <div class="cc">
+        <div class="cc-t">Tỷ lệ căng thẳng không gian SSI (%)</div>
+        <div class="cc-s">Space Stress Index — 3 tầng theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Tầng 1</span>
+          <span class="li"><span class="ld" style="background:#378add"></span>Tầng 2</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tầng 3</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-ssi"></canvas></div>
       </div>
-      <div style="position:relative;height:180px"><canvas id="c4"></canvas></div>
     </div>
-  </div>
-
-  <!-- HỆ THỐNG -->
-  <div class="sec-lbl"><i class="ti ti-database"></i>HỆ THỐNG OPAC · UPTODATE · FANPAGE</div>
-  <div class="met3">
-    <div class="mc"><div class="mc-lbl">Tỷ lệ dùng OPAC (%)</div><div class="mc-val">66%</div><div class="mc-chg eq">— Ổn định so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">TK Uptodate đang hoạt động</div><div class="mc-val">232</div><div class="mc-chg dn">↓ 47 TK so tháng trước</div></div>
-    <div class="mc"><div class="mc-lbl">Lượt truy cập Fanpage (tháng mới nhất)</div><div class="mc-val">6.582</div><div class="mc-chg up">↑ 21,0% so tháng trước</div></div>
-  </div>
-  <div class="bdr">
-    <div class="cc">
-      <div class="cc-t">Uptodate — TK Active · Lượt dùng · Tìm kiếm</div>
-      <div class="cc-s">Xu hướng sử dụng CSDL theo tháng</div>
-      <div class="leg">
-        <span class="li"><span class="ld" style="background:#185fa5"></span>TK Active</span>
-        <span class="li"><span class="ld" style="background:#1d9e75"></span>Tổng lượt dùng</span>
-        <span class="li"><span class="ld" style="background:#ef9f27"></span>Tìm kiếm</span>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Thẻ thư viện — Hoạt động · Mới · Gia hạn</div>
+        <div class="cc-s">Biến động số lượng theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>Thẻ hoạt động</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Thẻ mới</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Gia hạn</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="ch-the"></canvas></div>
       </div>
-      <div style="position:relative;height:155px"><canvas id="c5"></canvas></div>
-      <div class="cc-t" style="margin-top:14px;margin-bottom:4px">Lượt truy cập Fanpage theo tháng</div>
-      <div style="position:relative;height:120px"><canvas id="c6"></canvas></div>
-    </div>
-    <div class="cc">
-      <div class="cc-t">Chỉ số hệ thống & CSDL (tháng 5/2026)</div>
-      <div class="cc-s">Tổng hợp các chỉ tiêu vận hành</div>
-      <ul class="dbl" style="margin-top:6px">
-        <li><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-circle-filled" style="font-size:8px;color:#1d9e75"></i>Uptime hệ thống</span><span class="tag tg">100%</span></li>
-        <li><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-circle-filled" style="font-size:8px;color:#1d9e75"></i>Sao lưu dữ liệu thành công</span><span class="tag tg">100%</span></li>
-        <li><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-circle-filled" style="font-size:8px;color:#378add"></i>OPAC Adoption Rate</span><span class="tag tb">66%</span></li>
-        <li><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-circle-filled" style="font-size:8px;color:#ef9f27"></i>Khai thác tài nguyên số</span><span class="tag ty">36%</span></li>
-        <li><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-circle-filled" style="font-size:8px;color:#185fa5"></i>Tổng lượt mượn về nhà</span><span class="tag tb">269</span></li>
-        <li><span style="display:flex;align-items:center;gap:6px"><i class="ti ti-circle-filled" style="font-size:8px;color:#d4537e"></i>Biên mục mới trong tháng</span><span class="tag tg">323</span></li>
-      </ul>
-      <div class="ua" onclick="document.getElementById('fi').click()">
-        <i class="ti ti-file-spreadsheet"></i>
-        <p>Kéo thả hoặc chọn file Excel / CSV</p>
-        <small>Cập nhật tháng mới → dashboard tự vẽ lại</small>
+      <div class="cc">
+        <div class="cc-t">Uptodate — TK Active · Lượt dùng · Tìm kiếm</div>
+        <div class="cc-s">Xu hướng sử dụng CSDL theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>TK Active</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Lượt dùng</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tìm kiếm</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="ch-ut"></canvas></div>
       </div>
     </div>
   </div>
 
-  <div class="footer">© 2026 Thư viện — Trung tâm học liệu · Dashboard v1.0 · Dữ liệu: T3–T5/2026</div>
+  <!-- ===== 1. QUẢN LÝ NGƯỜI DÙNG ===== -->
+  <div id="sec-nguoidung" class="section">
+    <div class="sec-lbl"><i class="ti ti-id"></i>QUẢN LÝ NGƯỜI DÙNG</div>
+    <div class="g4">
+      <div class="mc hi"><div class="mc-lbl">Tổng thẻ đang hoạt động</div><div class="mc-val" id="nd-the">—</div></div>
+      <div class="mc"><div class="mc-lbl">Thẻ mới đăng ký</div><div class="mc-val" id="nd-new">—</div></div>
+      <div class="mc"><div class="mc-lbl">Thẻ trả</div><div class="mc-val" id="nd-tra">—</div></div>
+      <div class="mc warn"><div class="mc-lbl">Gia hạn thẻ</div><div class="mc-val" id="nd-gh">—</div></div>
+    </div>
+    <div class="g4">
+      <div class="mc warn"><div class="mc-lbl">Thẻ trả trễ hạn</div><div class="mc-val" id="nd-tre">—</div></div>
+      <div class="mc"><div class="mc-lbl">TK OPAC đang hoạt động</div><div class="mc-val" id="nd-opac-tk">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Lượt truy cập OPAC</div><div class="mc-val" id="nd-opac-l">—</div></div>
+      <div class="mc"><div class="mc-lbl">TK truy cập OPAC</div><div class="mc-val" id="nd-opac-acc">—</div></div>
+    </div>
+    <div class="g3">
+      <div class="mc"><div class="mc-lbl">Tỷ lệ dùng OPAC</div><div class="mc-val" id="nd-opac-rate">—</div></div>
+      <div class="mc"><div class="mc-lbl">Tỷ lệ khai thác tài nguyên số</div><div class="mc-val" id="nd-digital">—</div></div>
+      <div class="mc"><div class="mc-lbl">&nbsp;</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Biến động thẻ thư viện theo tháng</div>
+        <div class="cc-s">Hoạt động · Mới · Trả · Gia hạn · Trễ hạn</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>Hoạt động</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Mới</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Gia hạn</span>
+          <span class="li"><span class="ld" style="background:#e24b4a"></span>Trễ hạn</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-nd-the"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">OPAC — Lượt & Tỷ lệ sử dụng theo tháng</div>
+        <div class="cc-s">Lượt truy cập · TK truy cập · Tỷ lệ dùng (%)</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#378add"></span>Lượt truy cập</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tỷ lệ dùng %</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-nd-opac"></canvas></div>
+      </div>
+    </div>
+    <div class="tc">
+      <div class="tc-t">Top từ khoá tìm kiếm OPAC (tháng mới nhất)</div>
+      <div class="info-box" id="nd-keywords" style="margin-bottom:0">—</div>
+    </div>
+  </div>
+
+  <!-- ===== 2. PHỤC VỤ TẠI CHỖ ===== -->
+  <div id="sec-phucvu" class="section">
+    <div class="sec-lbl"><i class="ti ti-armchair"></i>PHỤC VỤ TẠI CHỖ — 3 TẦNG</div>
+    <div class="g4">
+      <div class="mc hi"><div class="mc-lbl">Tổng chỗ ngồi phục vụ</div><div class="mc-val" id="pv-cho">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Lượt bạn đọc Tầng 1</div><div class="mc-val" id="pv-t1">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Lượt bạn đọc Tầng 2</div><div class="mc-val" id="pv-t2">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Lượt bạn đọc Tầng 3</div><div class="mc-val" id="pv-t3">—</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Lượt bạn đọc theo tầng</div>
+        <div class="cc-s">Xu hướng theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Tầng 1</span>
+          <span class="li"><span class="ld" style="background:#378add"></span>Tầng 2</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tầng 3</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-pv-luot"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">SSI & SUR theo tầng (%)</div>
+        <div class="cc-s">Tỷ lệ căng thẳng & lấp đầy không gian — tháng mới nhất</div>
+        <div style="position:relative;height:200px"><canvas id="ch-pv-ssi"></canvas></div>
+      </div>
+    </div>
+    <div class="cg3">
+      <div class="tc">
+        <div class="tc-t">Tầng 1 — Khu tự học</div>
+        <ul class="kv">
+          <li><span class="kv-k">SSI</span><span class="kv-v" id="t1-ssi">—</span></li>
+          <li><span class="kv-k">SUR</span><span class="kv-v" id="t1-sur">—</span></li>
+          <li><span class="kv-k">Máy tính kín chỗ</span><span class="kv-v" id="t1-may">—</span></li>
+          <li><span class="kv-k">Giờ cao điểm</span><span class="kv-v" id="t1-gio" style="font-size:10px">—</span></li>
+        </ul>
+      </div>
+      <div class="tc">
+        <div class="tc-t">Tầng 2 — Sách Tiếng Việt</div>
+        <ul class="kv">
+          <li><span class="kv-k">SSI</span><span class="kv-v" id="t2-ssi">—</span></li>
+          <li><span class="kv-k">SUR</span><span class="kv-v" id="t2-sur">—</span></li>
+          <li><span class="kv-k">Máy tính kín chỗ</span><span class="kv-v" id="t2-may">—</span></li>
+          <li><span class="kv-k">Giờ cao điểm</span><span class="kv-v" id="t2-gio" style="font-size:10px">—</span></li>
+        </ul>
+      </div>
+      <div class="tc">
+        <div class="tc-t">Tầng 3 — Ngoại văn</div>
+        <ul class="kv">
+          <li><span class="kv-k">SSI</span><span class="kv-v" id="t3-ssi">—</span></li>
+          <li><span class="kv-k">SUR</span><span class="kv-v" id="t3-sur">—</span></li>
+          <li><span class="kv-k">Máy tính kín chỗ</span><span class="kv-v" id="t3-may">—</span></li>
+          <li><span class="kv-k">Giờ cao điểm</span><span class="kv-v" id="t3-gio" style="font-size:10px">—</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3. QUẢN TRỊ TÀI NGUYÊN TT ===== -->
+  <div id="sec-tainguyen" class="section">
+    <div class="sec-lbl"><i class="ti ti-books"></i>KHO TÀI NGUYÊN THÔNG TIN</div>
+    <div class="g4">
+      <div class="mc hi"><div class="mc-lbl">Nhan đề sách Tiếng Việt</div><div class="mc-val" id="tn-nd-tv">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Bản in sách Tiếng Việt</div><div class="mc-val" id="tn-bi-tv">—</div></div>
+      <div class="mc"><div class="mc-lbl">Nhan đề sách ngoại văn</div><div class="mc-val" id="tn-nd-nv">—</div></div>
+      <div class="mc"><div class="mc-lbl">Bản in sách ngoại văn</div><div class="mc-val" id="tn-bi-nv">—</div></div>
+    </div>
+    <div class="g4">
+      <div class="mc"><div class="mc-lbl">Loại tạp chí</div><div class="mc-val" id="tn-tc-loai">—</div></div>
+      <div class="mc"><div class="mc-lbl">Bản in tạp chí</div><div class="mc-val" id="tn-tc-ban">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Luận văn/luận án nội sinh</div><div class="mc-val" id="tn-lv">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">TL điện tử/tài nguyên mở</div><div class="mc-val" id="tn-dt">—</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Tăng trưởng kho tài nguyên</div>
+        <div class="cc-s">Tích lũy theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>Sách TV</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Ngoại văn</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Luận văn</span>
+          <span class="li"><span class="ld" style="background:#d4537e"></span>TL điện tử</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-tn-kho"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">Biên mục — Tiếp nhận & Hoàn thành</div>
+        <div class="cc-s">Tổng biên mục mới · Tỷ lệ hoàn thành (%)</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>Biên mục mới</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tỷ lệ hoàn thành %</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-tn-bm"></canvas></div>
+      </div>
+    </div>
+    <div class="cg2">
+      <div class="tc">
+        <div class="tc-t">Tiếp nhận & biên mục theo loại (tháng mới nhất)</div>
+        <ul class="kv">
+          <li><span class="kv-k">Sách in tiếp nhận / đã biên mục</span><span class="kv-v" id="tn-sach">—</span></li>
+          <li><span class="kv-k">TL điện tử tiếp nhận / đã biên mục</span><span class="kv-v" id="tn-dt2">—</span></li>
+          <li><span class="kv-k">Tạp chí tiếp nhận / đã biên mục</span><span class="kv-v" id="tn-tc2">—</span></li>
+          <li><span class="kv-k">Luận văn tiếp nhận / đã biên mục</span><span class="kv-v" id="tn-lv2">—</span></li>
+          <li><span class="kv-k">Tồn đọng từ tháng trước</span><span class="kv-v" id="tn-tondong">—</span></li>
+          <li><span class="kv-k">Tỷ lệ hoàn thành / tồn đọng</span><span class="kv-v" id="tn-ratehoanthanh">—</span></li>
+        </ul>
+      </div>
+      <div class="tc">
+        <div class="tc-t">Bàn giao & Sách tặng (tháng mới nhất)</div>
+        <ul class="kv">
+          <li><span class="kv-k">Sách tặng tiếp nhận</span><span class="kv-v" id="tn-tang">—</span></li>
+          <li><span class="kv-k">BG Kho sách Tiếng Việt</span><span class="kv-v" id="tn-bgTV">—</span></li>
+          <li><span class="kv-k">BG Kho sách Tiếng Anh</span><span class="kv-v" id="tn-bgTA">—</span></li>
+          <li><span class="kv-k">BG Kho tạp chí</span><span class="kv-v" id="tn-bgTC">—</span></li>
+          <li><span class="kv-k">BG Kho luận văn</span><span class="kv-v" id="tn-bgLV">—</span></li>
+          <li><span class="kv-k">Biểu ghi chuẩn hóa</span><span class="kv-v" id="tn-chuanhoa">—</span></li>
+          <li><span class="kv-k">Sách phục hồi T2 / T3</span><span class="kv-v" id="tn-phuchoi">—</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. DỊCH VỤ THÔNG TIN ===== -->
+  <div id="sec-dichvu" class="section">
+    <div class="sec-lbl"><i class="ti ti-repeat"></i>CUNG CẤP DỊCH VỤ THÔNG TIN</div>
+    <div class="g4">
+      <div class="mc hi"><div class="mc-lbl">Mượn sách TV về nhà</div><div class="mc-val" id="dv-muon">—</div></div>
+      <div class="mc"><div class="mc-lbl">Tài liệu trả</div><div class="mc-val" id="dv-tra">—</div></div>
+      <div class="mc"><div class="mc-lbl">Tài liệu gia hạn</div><div class="mc-val" id="dv-gh">—</div></div>
+      <div class="mc danger"><div class="mc-lbl">Tài liệu quá hạn</div><div class="mc-val" id="dv-qh">—</div></div>
+    </div>
+    <div class="g4">
+      <div class="mc"><div class="mc-lbl">Vòng quay kho sách</div><div class="mc-val" id="dv-tv">—</div></div>
+      <div class="mc"><div class="mc-lbl">AUR — Bạn đọc tích cực</div><div class="mc-val" id="dv-aur">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">YC xác minh không nợ</div><div class="mc-val" id="dv-xm">—</div></div>
+      <div class="mc"><div class="mc-lbl">TL nội sinh yêu cầu tại chỗ</div><div class="mc-val" id="dv-noisinh">—</div></div>
+    </div>
+    <div class="g4">
+      <div class="mc"><div class="mc-lbl">TL yêu cầu từ xa</div><div class="mc-val" id="dv-tuxa">—</div></div>
+      <div class="mc"><div class="mc-lbl">TL yêu cầu photo + in</div><div class="mc-val" id="dv-photoYC">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">YC photo hoàn thành</div><div class="mc-val" id="dv-photoHT">—</div></div>
+      <div class="mc"><div class="mc-lbl">Trang giấy photo phục vụ</div><div class="mc-val" id="dv-trang">—</div></div>
+    </div>
+    <div class="g3">
+      <div class="mc warn"><div class="mc-lbl">Số lần thay mực / bảo trì máy photo</div><div class="mc-val" id="dv-baotri">—</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Hoạt động mượn — trả — gia hạn — quá hạn</div>
+        <div class="cc-s">Lượt tài liệu theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>Mượn</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Trả</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Gia hạn</span>
+          <span class="li"><span class="ld" style="background:#e24b4a"></span>Quá hạn</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-dv-muon"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">Dịch vụ Photo theo tháng</div>
+        <div class="cc-s">Yêu cầu hoàn thành · Số trang phục vụ (/10)</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#378add"></span>YC hoàn thành</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Trang giấy (/10)</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-dv-photo"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 5. CƠ SỞ DỮ LIỆU ===== -->
+  <div id="sec-csdl" class="section">
+    <div class="sec-lbl"><i class="ti ti-database"></i>CƠ SỞ DỮ LIỆU UPTODATE & SPRINGERLINK</div>
+    <div class="g4">
+      <div class="mc"><div class="mc-lbl">Tổng TK Uptodate đăng ký</div><div class="mc-val" id="csdl-tot">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">TK Active</div><div class="mc-val" id="csdl-act">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Tổng lượt sử dụng</div><div class="mc-val" id="csdl-use">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Tổng số tìm kiếm</div><div class="mc-val" id="csdl-srch">—</div></div>
+    </div>
+    <div class="g4">
+      <div class="mc"><div class="mc-lbl">TK đăng ký mới</div><div class="mc-val" id="csdl-new">—</div></div>
+      <div class="mc"><div class="mc-lbl">TK gia hạn</div><div class="mc-val" id="csdl-rn">—</div></div>
+      <div class="mc"><div class="mc-lbl">Tạp chí qua SpringerLink</div><div class="mc-val" id="csdl-spring">—</div></div>
+      <div class="mc"><div class="mc-lbl">Tạp chí CSDL KH&CN</div><div class="mc-val" id="csdl-khcn">—</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Uptodate — TK Active · Lượt dùng · Tìm kiếm</div>
+        <div class="cc-s">Xu hướng theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#185fa5"></span>TK Active</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Lượt dùng</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tìm kiếm</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-csdl-ut"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">TK đăng ký mới & gia hạn</div>
+        <div class="cc-s">Theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Mới</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Gia hạn</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="ch-csdl-new"></canvas></div>
+      </div>
+    </div>
+    <div class="tc">
+      <div class="tc-t">Chủ đề xu hướng & Top chuyên khoa (tháng mới nhất)</div>
+      <div class="info-box" id="csdl-trend" style="margin-bottom:8px">—</div>
+      <div class="info-box" id="csdl-spec" style="margin-bottom:8px">—</div>
+      <div class="info-box" id="csdl-topic" style="margin-bottom:0">—</div>
+    </div>
+  </div>
+
+  <!-- ===== 6. HỆ THỐNG ===== -->
+  <div id="sec-hethong" class="section">
+    <div class="sec-lbl"><i class="ti ti-device-desktop"></i>HỆ THỐNG QUẢN TRỊ THƯ VIỆN</div>
+    <div class="g4">
+      <div class="mc hi"><div class="mc-lbl">Uptime hệ thống</div><div class="mc-val" id="ht-up">—</div></div>
+      <div class="mc hi"><div class="mc-lbl">Sao lưu thành công</div><div class="mc-val" id="ht-bk">—</div></div>
+      <div class="mc"><div class="mc-lbl">Sự cố hệ thống</div><div class="mc-val" id="ht-sc">—</div></div>
+      <div class="mc"><div class="mc-lbl">YC hỗ trợ IT</div><div class="mc-val" id="ht-yc">—</div></div>
+    </div>
+    <div class="g3">
+      <div class="mc warn"><div class="mc-lbl">Thời gian sửa sự cố lâu nhất</div><div class="mc-val" id="ht-fix" style="font-size:15px">—</div></div>
+      <div class="mc"><div class="mc-lbl">Lỗ hổng bảo mật phát hiện</div><div class="mc-val" id="ht-loh">—</div></div>
+      <div class="mc"><div class="mc-lbl">Lượt truy cập Fanpage</div><div class="mc-val" id="ht-fp">—</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Uptime & Sao lưu (%)</div>
+        <div class="cc-s">Theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Uptime</span>
+          <span class="li"><span class="ld" style="background:#378add"></span>Sao lưu</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="ch-ht-up"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">Lượt truy cập Fanpage theo tháng</div>
+        <div class="cc-s">Tổng lượt truy cập</div>
+        <div style="position:relative;height:190px"><canvas id="ch-ht-fp"></canvas></div>
+      </div>
+    </div>
+    <div class="tc">
+      <div class="tc-t">Phân loại lỗi phổ biến (tháng mới nhất)</div>
+      <div class="info-box" id="ht-loi" style="margin-bottom:0">—</div>
+    </div>
+  </div>
+
+  <!-- ===== 7. CSVC ===== -->
+  <div id="sec-csvc" class="section">
+    <div class="sec-lbl"><i class="ti ti-building"></i>CƠ SỞ VẬT CHẤT</div>
+    <div class="g4">
+      <div class="mc warn"><div class="mc-lbl">Sự cố Tầng 1</div><div class="mc-val" id="cv-t1">—</div></div>
+      <div class="mc"><div class="mc-lbl">Sự cố Tầng 2</div><div class="mc-val" id="cv-t2">—</div></div>
+      <div class="mc"><div class="mc-lbl">Sự cố Tầng 3</div><div class="mc-val" id="cv-t3">—</div></div>
+      <div class="mc warn"><div class="mc-lbl">Tổng sự cố CSVC</div><div class="mc-val" id="cv-tong">—</div></div>
+    </div>
+    <div class="g3">
+      <div class="mc hi"><div class="mc-lbl">Đã khắc phục</div><div class="mc-val" id="cv-kp">—</div></div>
+      <div class="mc"><div class="mc-lbl">YC gửi phòng KHTC&CSVC</div><div class="mc-val" id="cv-yc">—</div></div>
+      <div class="mc"><div class="mc-lbl">YC giải quyết hoàn tất</div><div class="mc-val" id="cv-gq">—</div></div>
+    </div>
+    <div class="g3">
+      <div class="mc danger"><div class="mc-lbl">YC tồn đọng chưa giải quyết</div><div class="mc-val" id="cv-td">—</div></div>
+    </div>
+    <div class="cg2">
+      <div class="cc">
+        <div class="cc-t">Sự cố theo tầng</div>
+        <div class="cc-s">Theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Tầng 1</span>
+          <span class="li"><span class="ld" style="background:#378add"></span>Tầng 2</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tầng 3</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="ch-cv-tang"></canvas></div>
+      </div>
+      <div class="cc">
+        <div class="cc-t">Phát sinh — Khắc phục — Tồn đọng</div>
+        <div class="cc-s">Theo tháng</div>
+        <div class="leg">
+          <span class="li"><span class="ld" style="background:#e24b4a"></span>Phát sinh</span>
+          <span class="li"><span class="ld" style="background:#1d9e75"></span>Khắc phục</span>
+          <span class="li"><span class="ld" style="background:#ef9f27"></span>Tồn đọng</span>
+        </div>
+        <div style="position:relative;height:190px"><canvas id="ch-cv-yc"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+  <div id="sec-settings" class="section">
+    <div class="sec-lbl"><i class="ti ti-upload"></i>NHẬP DỮ LIỆU — CẬP NHẬT HÀNG THÁNG</div>
+    <div class="sheets-form">
+      <div class="sheets-title"><i class="ti ti-brand-google"></i>Kết nối Google Sheets (tự động đồng bộ)</div>
+      <div class="sheets-row">
+        <input class="sheets-input" type="text" id="sheets-url" placeholder="Dán link CSV từ Google Sheets (sheet Dashboard)...">
+        <button class="btn primary" onclick="loadFromSheets()"><i class="ti ti-refresh"></i>Tải dữ liệu</button>
+      </div>
+      <div style="font-size:10.5px;color:var(--bdk);margin-top:7px"><i class="ti ti-info-circle" style="font-size:12px;vertical-align:-1px"></i> File → Share → Publish to web → chọn sheet "Dashboard" → CSV → Copy link</div>
+    </div>
+    <div class="cg2">
+      <div class="tc">
+        <div class="tc-t">Upload file Excel trực tiếp</div>
+        <div class="ua" onclick="document.getElementById('fi').click()">
+          <i class="ti ti-file-spreadsheet"></i>
+          <p>Kéo thả hoặc chọn file Excel / CSV</p>
+          <small>Hỗ trợ: .xlsx · .xls · .csv</small>
+        </div>
+      </div>
+      <div class="tc">
+        <div class="tc-t">Cấu trúc file chuẩn</div>
+        <ul class="kv" style="font-size:10.5px">
+          <li><span class="kv-k">Sheet chính</span><span class="kv-v"><span class="tag tb">Dashboard</span></span></li>
+          <li><span class="kv-k">Header dòng</span><span class="kv-v">Dòng 2 (Chỉ số / Tháng...)</span></li>
+          <li><span class="kv-k">Cột tháng mới</span><span class="kv-v">Thêm cột bên phải</span></li>
+          <li><span class="kv-k">Dashboard đọc cột</span><span class="kv-v">Tự nhận tất cả tháng có dữ liệu</span></li>
+        </ul>
+        <div class="info-box" style="margin-top:10px">Giữ nguyên <strong>thứ tự dòng và nhóm chỉ số (1–7)</strong>. Chỉ cần thêm cột tháng mới vào bên phải. Dashboard tự vẽ thêm điểm dữ liệu mới trên biểu đồ.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 Thư viện — Trung tâm học liệu · Dashboard Nội bộ v4.0</div>
 </main>
-
-<div class="toast" id="toast">✓ Đã cập nhật dữ liệu từ file Excel!</div>
+<div class="toast" id="toast">✓ Đã cập nhật!</div>
 
 <script>
-const MONTHS_DEFAULT = ['T3/2026','T4/2026','T5/2026'];
-let labels = [...MONTHS_DEFAULT];
-let D = {
-  tang1:[7123,9234,10250], tang2:[1513,1913,2439], tang3:[572,512,660],
-  ssi1:[30,50,60], ssi2:[3.3,10,36.36], ssi3:[0,0,0],
-  sachTV:[23021,23153,23232], nv:[3182,3182,3182],
-  luanvan:[10974,10985,10993], tlds:[3164,3173,3189],
-  muon:[248,259,269], bienMuc:[152,143,323], chuanHoa:[231,169,195],
-  upAct:[235,279,232], upUsage:[11439,10423,10711], upSearch:[5232,7193,6243],
-  fanpage:[5932,5439,6582]
-};
+let L = [];
+let D = {};
+function emptyArr(n){return Array(n).fill(0);}
 
-const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
-const tickColor = isDark ? '#9a9a92' : '#6a6a64';
+const $ = id => document.getElementById(id);
+const fmt = n => typeof n==='number' ? Math.round(n*100)/100 : (n||0);
+const fmtInt = n => typeof n==='number' ? Math.round(n).toLocaleString('vi-VN') : (n||'—');
+const last = arr => arr && arr.length ? arr[arr.length-1] : 0;
+function set(id,v){const e=$(id);if(e)e.textContent=v;}
 
-const baseOpts = (yMax) => ({
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
-    y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } }, max: yMax || undefined }
-  }
-});
+const CHARTS = {};
+const isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+const gridC = isDark?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';
+const tickC = isDark?'#9a9a92':'#6a6a64';
 
-let charts = {};
-function destroyAll() { Object.values(charts).forEach(c => c.destroy()); charts = {}; }
-
-function mkLine(id, datasets) {
-  charts[id] = new Chart(document.getElementById(id), {
-    type: 'line',
-    data: { labels, datasets: datasets.map(d => ({ ...d, tension: 0.4, pointRadius: 4, fill: false, borderWidth: 2 })) },
-    options: baseOpts()
+function mkLine(id, datasets, yMax){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart($(id),{
+    type:'line',
+    data:{labels:L, datasets:datasets.map(d=>({...d,tension:.4,pointRadius:4,fill:false,borderWidth:2.5}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:tickC,font:{size:10}}},
+               y:{grid:{color:gridC},ticks:{color:tickC,font:{size:10}},max:yMax||undefined}}}
   });
 }
-function mkBar(id, datasets, stacked, yMax) {
-  const sc = {
-    x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } }, stacked: !!stacked },
-    y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } }, stacked: !!stacked, max: yMax || undefined }
+function mkBar(id, datasets, stacked, yMax){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart($(id),{
+    type:'bar',
+    data:{labels:L, datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:tickC,font:{size:10}},stacked:!!stacked},
+              y:{grid:{color:gridC},ticks:{color:tickC,font:{size:10}},stacked:!!stacked,max:yMax||undefined}},
+      barPercentage:.65}
+  });
+}
+function mkBarCat(id, labels, datasets, opts){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart($(id),{
+    type:'bar',
+    data:{labels, datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{font:{size:10},color:tickC,boxWidth:12}}},
+      scales:{x:{grid:{display:false},ticks:{color:tickC,font:{size:10}}},
+              y:{grid:{color:gridC},ticks:{color:tickC,font:{size:10}}}},
+      barPercentage:.7,...opts}
+  });
+}
+
+function buildCharts(){
+  mkLine('ch-luot',[
+    {data:D.t1_luot,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,.07)',fill:true},
+    {data:D.t2_luot,borderColor:'#378add'},
+    {data:D.t3_luot,borderColor:'#ef9f27'}
+  ]);
+  mkBar('ch-ssi',[
+    {data:D.t1_ssi,backgroundColor:'rgba(29,158,117,.8)'},
+    {data:D.t2_ssi,backgroundColor:'rgba(55,138,221,.8)'},
+    {data:D.t3_ssi,backgroundColor:'rgba(239,159,39,.8)'}
+  ],false,100);
+  mkLine('ch-the',[
+    {data:D.the_hoatdong,borderColor:'#185fa5'},
+    {data:D.the_new,borderColor:'#1d9e75'},
+    {data:D.the_gh,borderColor:'#ef9f27'}
+  ]);
+  mkLine('ch-ut',[
+    {data:D.ut_act,borderColor:'#185fa5'},
+    {data:D.ut_use,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,.06)',fill:true},
+    {data:D.ut_srch,borderColor:'#ef9f27'}
+  ]);
+
+  // 1. NGƯỜI DÙNG
+  mkLine('ch-nd-the',[
+    {data:D.the_hoatdong,borderColor:'#185fa5'},
+    {data:D.the_new,borderColor:'#1d9e75'},
+    {data:D.the_gh,borderColor:'#ef9f27'},
+    {data:D.the_tre,borderColor:'#e24b4a'}
+  ]);
+  mkLine('ch-nd-opac',[
+    {data:D.opac_luot,borderColor:'#378add',backgroundColor:'rgba(55,138,221,.06)',fill:true},
+    {data:D.opac_rate,borderColor:'#ef9f27'}
+  ]);
+
+  // 2. PHỤC VỤ
+  mkLine('ch-pv-luot',[
+    {data:D.t1_luot,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,.07)',fill:true},
+    {data:D.t2_luot,borderColor:'#378add'},
+    {data:D.t3_luot,borderColor:'#ef9f27'}
+  ]);
+  mkBarCat('ch-pv-ssi',['Tầng 1','Tầng 2','Tầng 3'],[
+    {label:'SSI %',data:[last(D.t1_ssi),last(D.t2_ssi),last(D.t3_ssi)],backgroundColor:'rgba(239,159,39,.8)'},
+    {label:'SUR %',data:[last(D.t1_sur),last(D.t2_sur),last(D.t3_sur)],backgroundColor:'rgba(29,158,117,.8)'}
+  ],{scales:{y:{max:100}}});
+
+  // 3. TÀI NGUYÊN
+  mkLine('ch-tn-kho',[
+    {data:D.kho_sachTV,borderColor:'#185fa5'},
+    {data:D.kho_nv,borderColor:'#1d9e75'},
+    {data:D.kho_lv,borderColor:'#ef9f27'},
+    {data:D.kho_dt,borderColor:'#d4537e'}
+  ]);
+  mkLine('ch-tn-bm',[
+    {data:D.bm_total,borderColor:'#185fa5',backgroundColor:'rgba(24,95,165,.06)',fill:true},
+    {data:D.bm_hoanthanh,borderColor:'#ef9f27'}
+  ]);
+
+  // 4. DỊCH VỤ
+  mkBar('ch-dv-muon',[
+    {data:D.dv_muon,backgroundColor:'#185fa5'},
+    {data:D.dv_tra,backgroundColor:'#1d9e75'},
+    {data:D.dv_gh,backgroundColor:'#ef9f27'},
+    {data:D.dv_qh,backgroundColor:'rgba(226,75,74,.8)'}
+  ]);
+  mkBar('ch-dv-photo',[
+    {data:D.photo_yc,backgroundColor:'#378add'},
+    {data:D.photo_trang.map(v=>Math.round(v/10)),backgroundColor:'#ef9f27'}
+  ]);
+
+  // 5. CSDL
+  mkLine('ch-csdl-ut',[
+    {data:D.ut_act,borderColor:'#185fa5'},
+    {data:D.ut_use,borderColor:'#1d9e75',backgroundColor:'rgba(29,158,117,.06)',fill:true},
+    {data:D.ut_srch,borderColor:'#ef9f27'}
+  ]);
+  mkBar('ch-csdl-new',[
+    {data:D.ut_new,backgroundColor:'#1d9e75'},
+    {data:D.ut_rn,backgroundColor:'#ef9f27'}
+  ]);
+
+  // 6. HỆ THỐNG
+  mkLine('ch-ht-up',[
+    {data:D.ht_up,borderColor:'#1d9e75'},
+    {data:D.ht_bk,borderColor:'#378add'}
+  ],100);
+  mkBar('ch-ht-fp',[{data:D.ht_fp,backgroundColor:'rgba(212,83,126,.75)'}]);
+
+  // 7. CSVC
+  mkBar('ch-cv-tang',[
+    {data:D.cv_t1,backgroundColor:'#1d9e75'},
+    {data:D.cv_t2,backgroundColor:'#378add'},
+    {data:D.cv_t3,backgroundColor:'#ef9f27'}
+  ]);
+  mkBar('ch-cv-yc',[
+    {data:D.cv_tong,backgroundColor:'rgba(226,75,74,.8)'},
+    {data:D.cv_kp,backgroundColor:'rgba(29,158,117,.8)'},
+    {data:D.cv_td,backgroundColor:'rgba(239,159,39,.8)'}
+  ]);
+}
+
+function renderCards(){
+  const totalBD = last(D.t1_luot)+last(D.t2_luot)+last(D.t3_luot);
+  const totalBM = last(D.bm_total);
+
+  set('ov-bd',fmtInt(totalBD));
+  set('ov-muon',fmtInt(last(D.dv_muon)));
+  set('ov-ut',fmtInt(last(D.ut_use)));
+  set('ov-bm',fmtInt(totalBM));
+  set('ov-opac',fmt(last(D.opac_rate))+'%');
+  set('ov-fp',fmtInt(last(D.ht_fp)));
+  set('ov-tre',fmtInt(last(D.the_tre)));
+  set('ov-suco',fmtInt(last(D.cv_tong)));
+
+  // 1. Người dùng
+  set('nd-the',fmtInt(last(D.the_hoatdong)));
+  set('nd-new',fmtInt(last(D.the_new)));
+  set('nd-tra',fmtInt(last(D.the_tra)));
+  set('nd-gh',fmtInt(last(D.the_gh)));
+  set('nd-tre',fmtInt(last(D.the_tre)));
+  set('nd-opac-tk',fmtInt(last(D.opac_tk_active)));
+  set('nd-opac-l',fmtInt(last(D.opac_luot)));
+  set('nd-opac-acc',fmtInt(last(D.opac_tk_truycap)));
+  set('nd-opac-rate',fmt(last(D.opac_rate))+'%');
+  set('nd-digital',fmt(last(D.opac_digital))+'%');
+  set('nd-keywords',last(D.opac_keywords)||'—');
+
+  // 2. Phục vụ
+  set('pv-cho',fmtInt(last(D.cho_ngoi)));
+  set('pv-t1',fmtInt(last(D.t1_luot)));
+  set('pv-t2',fmtInt(last(D.t2_luot)));
+  set('pv-t3',fmtInt(last(D.t3_luot)));
+  set('t1-ssi',fmt(last(D.t1_ssi))+'%'); set('t1-sur',fmt(last(D.t1_sur))+'%');
+  set('t1-may',fmtInt(last(D.t1_may))+' ngày'); set('t1-gio',last(D.t1_gio)||'—');
+  set('t2-ssi',fmt(last(D.t2_ssi))+'%'); set('t2-sur',fmt(last(D.t2_sur))+'%');
+  set('t2-may',fmtInt(last(D.t2_may))+' ngày'); set('t2-gio',last(D.t2_gio)||'—');
+  set('t3-ssi',fmt(last(D.t3_ssi))+'%'); set('t3-sur',fmt(last(D.t3_sur))+'%');
+  set('t3-may',fmtInt(last(D.t3_may))+' ngày'); set('t3-gio',last(D.t3_gio)||'—');
+
+  // 3. Tài nguyên
+  set('tn-nd-tv',fmtInt(last(D.tn_nd_tv))); set('tn-bi-tv',fmtInt(last(D.kho_sachTV)));
+  set('tn-nd-nv',fmtInt(last(D.tn_nd_nv))); set('tn-bi-nv',fmtInt(last(D.kho_nv)));
+  set('tn-tc-loai',fmtInt(last(D.tn_tc_loai))); set('tn-tc-ban',fmtInt(last(D.tn_tc_ban)));
+  set('tn-lv',fmtInt(last(D.kho_lv))); set('tn-dt',fmtInt(last(D.kho_dt)));
+  set('tn-sach',fmtInt(last(D.bm_sachTN))+' / '+fmtInt(last(D.bm_sachBM)));
+  set('tn-dt2',fmtInt(last(D.bm_dtTN))+' / '+fmtInt(last(D.bm_dtBM)));
+  set('tn-tc2',fmtInt(last(D.bm_tcTN))+' / '+fmtInt(last(D.bm_tcBM)));
+  set('tn-lv2',fmtInt(last(D.bm_lvTN))+' / '+fmtInt(last(D.bm_lvBM)));
+  set('tn-tondong',fmtInt(last(D.bm_tondong)));
+  set('tn-ratehoanthanh',fmt(last(D.bm_hoanthanh))+'% / '+fmt(last(D.bm_tonrate))+'%');
+  set('tn-tang',fmtInt(last(D.tn_tang)));
+  set('tn-bgTV',fmtInt(last(D.bm_bgTV))); set('tn-bgTA',fmtInt(last(D.bm_bgTA)));
+  set('tn-bgTC',fmtInt(last(D.bm_bgTC))); set('tn-bgLV',fmtInt(last(D.bm_bgLV)));
+  set('tn-chuanhoa',fmtInt(last(D.bm_chuanhoa)));
+  set('tn-phuchoi',fmtInt(last(D.phuchoi_t2))+' / '+fmtInt(last(D.phuchoi_t3)));
+
+  // 4. Dịch vụ
+  set('dv-muon',fmtInt(last(D.dv_muon))); set('dv-tra',fmtInt(last(D.dv_tra)));
+  set('dv-gh',fmtInt(last(D.dv_gh))); set('dv-qh',fmtInt(last(D.dv_qh)));
+  set('dv-tv',last(D.dv_tv)); set('dv-aur',fmt(last(D.dv_aur))+'%');
+  set('dv-xm',fmtInt(last(D.dv_xm))); set('dv-noisinh',fmtInt(last(D.dv_noisinh)));
+  set('dv-tuxa',fmtInt(last(D.dv_tuxa))); set('dv-photoYC',fmtInt(last(D.dv_photoYC)));
+  set('dv-photoHT',fmtInt(last(D.photo_yc))); set('dv-trang',fmtInt(last(D.photo_trang)));
+  set('dv-baotri',fmtInt(last(D.photo_baotri)));
+
+  // 5. CSDL
+  set('csdl-tot',fmtInt(last(D.ut_tot))); set('csdl-act',fmtInt(last(D.ut_act)));
+  set('csdl-use',fmtInt(last(D.ut_use))); set('csdl-srch',fmtInt(last(D.ut_srch)));
+  set('csdl-new',fmtInt(last(D.ut_new))); set('csdl-rn',fmtInt(last(D.ut_rn)));
+  set('csdl-spring',fmtInt(last(D.csdl_springer))); set('csdl-khcn',fmtInt(last(D.csdl_khcn)));
+  set('csdl-trend','<strong>Chủ đề xu hướng:</strong> '+(last(D.ut_trend)||'—'));
+  set('csdl-spec','<strong>Top chuyên khoa:</strong> '+(last(D.ut_spec)||'—'));
+  set('csdl-topic','<strong>Top chủ đề y khoa:</strong> '+(last(D.ut_topic)||'—'));
+
+  // 6. Hệ thống
+  set('ht-up',fmt(last(D.ht_up))+'%'); set('ht-bk',fmt(last(D.ht_bk))+'%');
+  set('ht-sc',fmtInt(last(D.ht_sc))); set('ht-yc',fmtInt(last(D.ht_yc)));
+  set('ht-fix',last(D.ht_fix)||'—'); set('ht-loh',fmtInt(last(D.ht_loh)));
+  set('ht-fp',fmtInt(last(D.ht_fp)));
+  set('ht-loi','<strong>Lỗi phổ biến:</strong> '+(last(D.ht_loi)||'—'));
+
+  // 7. CSVC
+  set('cv-t1',fmtInt(last(D.cv_t1))); set('cv-t2',fmtInt(last(D.cv_t2))); set('cv-t3',fmtInt(last(D.cv_t3)));
+  set('cv-tong',fmtInt(last(D.cv_tong))); set('cv-kp',fmtInt(last(D.cv_kp)));
+  set('cv-yc',fmtInt(last(D.cv_yc))); set('cv-gq',fmtInt(last(D.cv_gq))); set('cv-td',fmtInt(last(D.cv_td)));
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'));
+  $('sec-'+name).classList.add('on');
+  if(el) el.classList.add('on');
+}
+
+// ============ PARSE EXCEL THEO CẤU TRÚC MỚI ============
+// STT thực = group.index, được lưu dưới dạng Date(2026, index, group) HOẶC string "group.index"
+function parseWorkbook(wb, fname){
+  const wsName = wb.SheetNames.includes('Dashboard')?'Dashboard':wb.SheetNames[0];
+  const ws = wb.Sheets[wsName];
+  const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+
+  // Header ở dòng có "Chỉ số" tại cột B (index 1)
+  let hdrRow=-1;
+  for(let i=0;i<rows.length;i++){
+    if(rows[i]&&String(rows[i][1]||'').trim()==='Chỉ số'){hdrRow=i;break;}
+  }
+  if(hdrRow<0){alert('Không tìm thấy dòng header "Chỉ số" ở cột B.');return;}
+
+  const hdr=rows[hdrRow];
+  // Cột tháng bắt đầu từ index 3 (D) theo file mẫu: A=STT,B=Chỉ số,C=Cán bộ,D...=tháng
+  const monthCols=[];
+  for(let c=3;c<hdr.length;c++){
+    const v=hdr[c];
+    if(v==null||String(v).trim()==='')continue;
+    // Bỏ cột "Ghi chú cách tính" và các cột text không phải tháng
+    if(!(v instanceof Date) && !(typeof v==='number'&&v>40000)) continue;
+    let label;
+    if(v instanceof Date){
+      label='T'+(v.getMonth()+1)+'/'+v.getFullYear();
+    }else{
+      const d=new Date(Math.round((v-25569)*864e5));
+      label='T'+(d.getMonth()+1)+'/'+d.getFullYear();
+    }
+    monthCols.push({col:c,label});
+  }
+  if(monthCols.length===0){alert('Không tìm thấy cột tháng có dữ liệu.');return;}
+  L = monthCols.map(m=>m.label);
+
+  // Map: STT thực = group.counter, tính bằng cách đếm thứ tự dòng con trong mỗi nhóm
+  // (cột A có thể là date/string/number tùy Excel tự sinh, không decode trực tiếp — chỉ dùng để đếm)
+  const sttMap={};
+  let curGroup=null, counter=0;
+  rows.forEach((r,i)=>{
+    if(!r)return;
+    const v=r[0];
+    if(typeof v==='number' && Number.isInteger(v) && v>=1 && v<=20 && (r[1]==null||/^[A-ZÀ-Ỹ ]+$/.test(String(r[1]||'').trim()))){
+      // dòng nhóm (STT nguyên + tên nhóm viết hoa ở cột B, hoặc cột B rỗng)
+      curGroup=v; counter=0; return;
+    }
+    if(v==null || curGroup==null)return;
+    counter++;
+    sttMap[curGroup+'.'+counter]=i;
+  });
+
+  function vals(stt){
+    const i=sttMap[stt];
+    if(i==null)return monthCols.map(()=>0);
+    const r=rows[i];
+    return monthCols.map(m=>{
+      const v=r[m.col];
+      if(v==null||v==='')return 0;
+      const n=parseFloat(String(v).replace(/[^\d.\-]/g,''));
+      return isNaN(n)?0:n;
+    });
+  }
+  function txt(stt){
+    const i=sttMap[stt]; if(i==null)return'';
+    const r=rows[i];
+    for(let k=monthCols.length-1;k>=0;k--){
+      const v=r[monthCols[k].col];
+      if(v!=null&&v!=='')return String(v);
+    }
+    return'';
+  }
+
+  // ===== MAP DỮ LIỆU (theo đúng thứ tự thật trong file mẫu) =====
+  D = {
+    // Nhóm 1: Quản lý người dùng
+    the_hoatdong:vals('1.1'), the_new:vals('1.2'), the_tra:vals('1.3'),
+    the_gh:vals('1.4'), the_tre:vals('1.5'),
+    opac_tk_active:vals('1.6'), opac_luot:vals('1.7'), opac_tk_truycap:vals('1.8'),
+    opac_rate:vals('1.9'), opac_digital:vals('1.10'),
+    opac_keywords:monthCols.map((m)=>{const r=rows[sttMap['1.11']]; return r?String(r[m.col]||''):'';}),
+
+    // Nhóm 2: Phục vụ tại chỗ
+    cho_ngoi:vals('2.1'),
+    t1_luot:vals('2.2'), t1_ssi:vals('2.3'), t1_sur:vals('2.4'), t1_may:vals('2.5'),
+    t1_gio:monthCols.map((m)=>{const r=rows[sttMap['2.6']]; return r?String(r[m.col]||''):'';}),
+    t2_luot:vals('2.7'), t2_ssi:vals('2.8'), t2_sur:vals('2.9'), t2_may:vals('2.10'),
+    t2_gio:monthCols.map((m)=>{const r=rows[sttMap['2.11']]; return r?String(r[m.col]||''):'';}),
+    t3_luot:vals('2.12'), t3_ssi:vals('2.13'), t3_sur:vals('2.14'), t3_may:vals('2.15'),
+    t3_gio:monthCols.map((m)=>{const r=rows[sttMap['2.16']]; return r?String(r[m.col]||''):'';}),
+
+    // Nhóm 3: Tài nguyên thông tin
+    tn_nd_tv:vals('3.1'), kho_sachTV:vals('3.2'),
+    tn_nd_nv:vals('3.3'), kho_nv:vals('3.4'),
+    tn_tc_loai:vals('3.5'), tn_tc_ban:vals('3.6'),
+    kho_lv:vals('3.7'), kho_dt:vals('3.8'),
+    bm_sachTN:vals('3.9'), tn_tang:vals('3.10'), bm_sachBM:vals('3.11'),
+    bm_dtTN:vals('3.12'), bm_dtBM:vals('3.13'),
+    bm_tcTN:vals('3.14'), bm_tcBM:vals('3.15'),
+    bm_lvTN:vals('3.16'), bm_lvBM:vals('3.17'),
+    bm_tondong:vals('3.18'), bm_hoanthanh:vals('3.19'), bm_tonrate:vals('3.20'),
+    bm_bgTV:vals('3.21'), bm_bgTA:vals('3.22'), bm_bgTC:vals('3.23'), bm_bgLV:vals('3.24'),
+    bm_total:vals('3.25'), bm_chuanhoa:vals('3.26'),
+    phuchoi_t2:vals('3.27'), phuchoi_t3:vals('3.28'),
+
+    // Nhóm 4: Dịch vụ thông tin
+    dv_muon:vals('4.1'), dv_tv:vals('4.2'), dv_aur:vals('4.3'),
+    dv_gh:vals('4.4'), dv_tra:vals('4.5'), dv_qh:vals('4.6'),
+    dv_xm:vals('4.7'), dv_noisinh:vals('4.8'), dv_tuxa:vals('4.9'),
+    dv_photoYC:vals('4.10'), photo_yc:vals('4.11'), photo_trang:vals('4.12'),
+    photo_baotri:vals('4.13'),
+
+    // Nhóm 5: Cơ sở dữ liệu
+    csdl_quyentruycap:monthCols.map((m)=>{const r=rows[sttMap['5.1']]; return r?String(r[m.col]||''):'';}),
+    csdl_springer:vals('5.2'), csdl_khcn:vals('5.3'),
+    ut_tot:vals('5.4'), ut_new:vals('5.5'), ut_rn:vals('5.6'),
+    ut_act:vals('5.7'), ut_use:vals('5.8'), ut_srch:vals('5.9'),
+    ut_trend:monthCols.map((m)=>{const r=rows[sttMap['5.10']]; return r?String(r[m.col]||''):'';}),
+    ut_spec:monthCols.map((m)=>{const r=rows[sttMap['5.11']]; return r?String(r[m.col]||''):'';}),
+    ut_topic:monthCols.map((m)=>{const r=rows[sttMap['5.12']]; return r?String(r[m.col]||''):'';}),
+
+    // Nhóm 6: Hệ thống
+    ht_up:vals('6.1'), ht_bk:vals('6.2'), ht_sc:vals('6.3'),
+    ht_fix:monthCols.map((m)=>{const r=rows[sttMap['6.4']]; return r?String(r[m.col]||''):'';}),
+    ht_loh:vals('6.5'),
+    ht_loi:monthCols.map((m)=>{const r=rows[sttMap['6.6']]; return r?String(r[m.col]||''):'';}),
+    ht_yc:vals('6.7'), ht_fp:vals('6.8'),
+
+    // Nhóm 7: CSVC
+    cv_t1:vals('7.1'), cv_t2:vals('7.2'), cv_t3:vals('7.3'),
+    cv_tong:vals('7.4'), cv_kp:vals('7.5'), cv_yc:vals('7.6'), cv_gq:vals('7.7'), cv_td:vals('7.8')
   };
-  charts[id] = new Chart(document.getElementById(id), {
-    type: 'bar',
-    data: { labels, datasets },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: sc, barPercentage: 0.65 }
-  });
+
+  $('sub-date').textContent='Dữ liệu: '+L.join(' · ')+' · Nguồn: '+fname;
+  renderCards();
+  buildCharts();
+  showToast('✓ Đã tải '+L.length+' tháng dữ liệu từ '+fname);
 }
 
-function buildAll() {
-  destroyAll();
-  mkLine('c1', [
-    { data: D.tang1, borderColor: '#1d9e75', backgroundColor: 'rgba(29,158,117,.08)', fill: true },
-    { data: D.tang2, borderColor: '#378add' },
-    { data: D.tang3, borderColor: '#ef9f27' }
-  ]);
-  mkBar('c2', [
-    { data: D.ssi1, backgroundColor: 'rgba(29,158,117,.8)', label: 'SSI T1' },
-    { data: D.ssi2, backgroundColor: 'rgba(55,138,221,.8)', label: 'SSI T2' },
-    { data: D.ssi3, backgroundColor: 'rgba(239,159,39,.8)',  label: 'SSI T3' }
-  ], false, 100);
-  mkBar('c3', [
-    { data: D.sachTV,   backgroundColor: '#185fa5', label: 'Sách TV' },
-    { data: D.luanvan,  backgroundColor: '#ef9f27', label: 'Luận văn' },
-    { data: D.tlds,     backgroundColor: '#d4537e', label: 'TL điện tử' },
-    { data: D.nv,       backgroundColor: '#1d9e75', label: 'Ngoại văn' }
-  ], true);
-  mkBar('c4', [
-    { data: D.muon,     backgroundColor: '#185fa5', label: 'Mượn' },
-    { data: D.bienMuc,  backgroundColor: '#1d9e75', label: 'Biên mục' },
-    { data: D.chuanHoa, backgroundColor: '#ef9f27', label: 'Chuẩn hóa' }
-  ]);
-  mkLine('c5', [
-    { data: D.upAct,   borderColor: '#185fa5' },
-    { data: D.upUsage, borderColor: '#1d9e75', backgroundColor: 'rgba(29,158,117,.07)', fill: true },
-    { data: D.upSearch,borderColor: '#ef9f27' }
-  ]);
-  mkBar('c6', [{ data: D.fanpage, backgroundColor: 'rgba(55,138,221,.75)', label: 'Fanpage' }]);
-
-  // Cập nhật metric cards
-  const last = D.tang1.length - 1;
-  const prev = last - 1;
-  document.getElementById('m-t1').textContent = D.tang1[last].toLocaleString('vi-VN');
-  document.getElementById('m-t2').textContent = D.tang2[last].toLocaleString('vi-VN');
-  document.getElementById('m-ssi1').textContent = D.ssi1[last] + '%';
-  document.getElementById('m-ssi2').textContent = D.ssi2[last].toFixed(1) + '%';
-  const chg1 = prev >= 0 ? ((D.tang1[last] - D.tang1[prev]) / D.tang1[prev] * 100).toFixed(1) : null;
-  if (chg1 !== null) {
-    const el = document.getElementById('m-t1c');
-    el.textContent = (chg1 >= 0 ? '↑ ' : '↓ ') + Math.abs(chg1) + '% so tháng trước';
-    el.className = 'mc-chg ' + (chg1 >= 0 ? 'up' : 'dn');
-  }
-}
-
-buildAll();
-
-// Upload Excel
-document.getElementById('fi').addEventListener('change', function(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      const wb = XLSX.read(ev.target.result, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: 0 });
-      const dataRows = rows.filter(r => typeof r[0] === 'number' && r[0] > 0);
-      if (dataRows.length >= 18) {
-        // Đọc tên tháng từ header (row 0, từ cột 2 trở đi)
-        const hdr = rows[0] || [];
-        labels = [];
-        for (let c = 2; c < hdr.length; c++) {
-          const v = hdr[c];
-          if (!v) break;
-          if (typeof v === 'number' && v > 40000) {
-            // Serial date Excel → tháng/năm
-            const d = new Date(Math.round((v - 25569) * 86400 * 1000));
-            labels.push('T' + (d.getMonth()+1) + '/' + d.getFullYear());
-          } else {
-            labels.push(String(v));
-          }
-        }
-        const nCols = labels.length;
-        const g = (i) => dataRows[i] ? Array.from({length: nCols}, (_,c) => +dataRows[i][c+2] || 0) : [];
-        D.tang1=g(0); D.ssi1=g(1); D.tang2=g(2); D.ssi2=g(3);
-        D.tang3=g(4); D.ssi3=g(5); D.sachTV=g(6); D.nv=g(7);
-        D.luanvan=g(8); D.tlds=g(9); D.muon=g(10); D.bienMuc=g(11);
-        D.chuanHoa=g(12); D.fanpage=g(17); D.upAct=g(18); D.upUsage=g(19); D.upSearch=g(20);
-        buildAll();
-        document.getElementById('sub-date').textContent = 'Dữ liệu: ' + labels.join(' · ') + ' · Nguồn: ' + f.name;
-        const t = document.getElementById('toast');
-        t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 3500);
-      } else {
-        alert('File không đủ dữ liệu. Cần ít nhất 18 chỉ số (dòng), đúng định dạng mẫu.');
-      }
-    } catch(err) { alert('Lỗi đọc file: ' + err.message); }
+document.getElementById('fi').addEventListener('change',function(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
+      parseWorkbook(wb,f.name);
+    }catch(err){alert('Lỗi: '+err.message);console.error(err);}
   };
   r.readAsArrayBuffer(f);
 });
+
+async function loadFromSheets(){
+  const url=$('sheets-url').value.trim();
+  if(!url){alert('Vui lòng dán link CSV Google Sheets vào ô trên.');return;}
+  showToast('⟳ Đang tải từ Google Sheets...');
+  try{
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('Không thể tải. Kiểm tra link và quyền công khai.');
+    const csv=await res.text();
+    const wb=XLSX.read(csv,{type:'string',cellDates:true});
+    parseWorkbook(wb,'Google Sheets');
+  }catch(err){alert('Lỗi: '+err.message);}
+}
+
+function showToast(msg){
+  const t=$('toast');t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',3500);
+}
+
+// ============ DỮ LIỆU NHÚNG SẴN (T6, T7/2026 — từ file_mau_chay_gith.xlsx, đầy đủ 96 chỉ số) ============
+const L_EMBED = ["T6/2026", "T7/2026"];
+
+const D_EMBED = {
+  the_hoatdong: [1860, 1925],
+  the_new: [20, 35],
+  the_tra: [0, 0],
+  the_gh: [10, 30],
+  the_tre: [0, 0],
+  opac_tk_active: [1860, 1925],
+  opac_luot: [417, 274512],
+  opac_tk_truycap: [274, 608],
+  opac_rate: [15, 32],
+  opac_digital: [36, 0.14],
+  opac_keywords: ["“răng”, “Nhi khoa”, “gan nhiễm mỡ”, “kiem nghiem duoc lieu bang phuong phap hien vi”, “tình hình thiếu máu”.", "\"clinical biochemistry\", \"IntechOpen\",\"Pharmacy\",\"Organic Chemistry\""],
+  cho_ngoi: [322, 322],
+  t1_luot: [10250, 10500],
+  t1_ssi: [60, 83],
+  t1_sur: [27, 23],
+  t1_may: [0, 0],
+  t1_gio: ["8:00 - 11:00 và 14:00 - 17:00", ""],
+  t2_luot: [2439, 2564],
+  t2_ssi: [36, 100],
+  t2_sur: [16.6, 13.24],
+  t2_may: [0, 0],
+  t2_gio: ["9:00 - 11:00 và 14:00 - 17:00", "8:00 - 11:00 và 14:00 - 17:00"],
+  t3_luot: [746, 805],
+  t3_ssi: [0, 0],
+  t3_sur: [0, 0],
+  t3_may: [10, 12],
+  t3_gio: ["8:00 - 11:00 và 14:30 - 17:00", "8:00 - 11:00 và 14:30 - 17:00"],
+  tn_nd_tv: [2319, 2322],
+  kho_sachTV: [19556, 19586],
+  tn_nd_nv: [2449, 2449],
+  kho_nv: [3182, 3182],
+  tn_tc_loai: [267, 267],
+  tn_tc_ban: [12405, 12405],
+  kho_lv: [10993, 11095],
+  kho_dt: [3189, 3540],
+  bm_sachTN: [170, 0],
+  tn_tang: [39, 24],
+  bm_sachBM: [150, 0],
+  bm_dtTN: [165, 3557],
+  bm_dtBM: [165, 1700],
+  bm_tcTN: [10, 18],
+  bm_tcBM: [0, 0],
+  bm_lvTN: [8, 92],
+  bm_lvBM: [8, 89],
+  bm_tondong: [30, 0],
+  bm_hoanthanh: [89, 0],
+  bm_tonrate: [11, 0],
+  bm_bgTV: [150, 0],
+  bm_bgTA: [0, 0],
+  bm_bgTC: [0, 0],
+  bm_bgLV: [8, 89],
+  bm_total: [323, 1789],
+  bm_chuanhoa: [195, 1789],
+  phuchoi_t2: [9, 2],
+  phuchoi_t3: [5, 6],
+  dv_muon: [269, 122],
+  dv_tv: [0.017, 0.006],
+  dv_aur: [14.46, 6.34],
+  dv_gh: [126, 34],
+  dv_tra: [265, 90],
+  dv_qh: [4, 6],
+  dv_xm: [324, 437],
+  dv_noisinh: [63, 44],
+  dv_tuxa: [0, 27],
+  dv_photoYC: [15, 35],
+  photo_yc: [15, 35],
+  photo_trang: [1200, 1383],
+  photo_baotri: [0, 0],
+  csdl_quyentruycap: ["Uptodate; SpringerLink; CSDL Tạp chí chuyên ngành Khoa học và Công nghệ", ""],
+  csdl_springer: [1489, 1489],
+  csdl_khcn: [96, 96],
+  ut_tot: [8150, 8165],
+  ut_new: [6, 15],
+  ut_rn: [162, 87],
+  ut_act: [232, 212],
+  ut_use: [10711, 11008],
+  ut_srch: [6243, 5767],
+  ut_trend: ["“Gestational diabetes mellitus: Screening, diagnosis, and risk reduction”, “Anesthesia for open abdominal aortic surgery”, “Clinical manifestations and diagnosis of osteoarthritis”.", "\"Evaluation of adults with ascites\", \"Epidemiology, clinical manifestations, and diagnosis of herpes zoster\", \"Stupor and coma in adults \""],
+  ut_spec: ["#ERROR!", "Anesthesiology: 1075, Drug Information 795, Pediatrics 784, Primary Care (Adult) 771, Nephrology and Hypertension 666"],
+  ut_topic: ["#ERROR!", "\"Evaluation of adults with ascites\" 55, \"Stupor and coma in adults\" 33, \"Anaphylaxis: Emergency treatment\" 32, \"An overview of angioedema: Clinical features, diagnosis, and management \" 31, \"Anesthesia for coronary artery bypass grafting surgery\" 30"],
+  ht_up: [100, 98],
+  ht_bk: [100, 100],
+  ht_sc: [0, 3],
+  ht_fix: ["", "60 phút"],
+  ht_loh: [0, 0],
+  ht_loi: ["Lỗi phần mềm office", "Loading chậm"],
+  ht_yc: [3, 5],
+  ht_fp: [6582, 83092],
+  cv_t1: [16, 4],
+  cv_t2: [0, 0],
+  cv_t3: [0, 0],
+  cv_tong: [7, 5],
+  cv_kp: [7, 5],
+  cv_yc: [3, 4],
+  cv_gq: [4, 2],
+  cv_td: [3, 5],
+};
+
+// INIT — tự động hiển thị dữ liệu nhúng sẵn ngay khi mở trang
+L = L_EMBED.slice();
+D = D_EMBED;
+$('sub-date').textContent='Dữ liệu: '+L.join(' · ')+' · Nguồn: file_mau_chay_gith.xlsx (nhúng sẵn)';
+renderCards();
+buildCharts();
 </script>
 </body>
 </html>
